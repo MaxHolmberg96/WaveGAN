@@ -96,4 +96,3 @@ def wavegan_discriminator(d, c):
     model.build()
     model.summary()
     return model
-
