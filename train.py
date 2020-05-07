@@ -117,7 +117,7 @@ def generate_sample(generated_audio, output_dir, epoch):
 hyperparams = {
     'dataset': 'sc09.npy',
     'num_channels': 1,
-    'batch_size': 16,
+    'batch_size': 64,
     'model_dim': 64,
     'latent_dim': 100,
     'phase_shuffle': 2,
