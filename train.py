@@ -1,8 +1,9 @@
 from wavegan import *
 import numpy as np
 import datetime
+import os
 #tf.random.set_seed(0)
-#tf.config.experimental.set_visible_devices([], 'GPU')
+tf.config.experimental.set_visible_devices([], 'GPU')
 @tf.function
 def train_step_disc(x):
     z = tf.random.uniform(
@@ -55,10 +56,10 @@ def wavegan_loss(gen, disc, x, z):
     return gen_loss, disc_loss + gp
 
 
-def train(dataset, epochs, shuffle=False):
+def train(dataset, epochs, shuffle=False, initial_step=0):
     import time
     from tqdm import tqdm
-    update_step = 0
+    update_step = initial_step
     for epoch in range(epochs):
         start = time.time()
         offset = 0
@@ -68,26 +69,49 @@ def train(dataset, epochs, shuffle=False):
             if i % hyperparams['d_per_g_update'] == 0:
                 train_step_gen(batch)
             train_step_disc(batch)
+            if i % hyperparams['update_losses'] == 0:
+                z = tf.random.uniform(
+                    shape=[hyperparams['batch_size'], hyperparams['latent_dim']],
+                    minval=-1.,
+                    maxval=1.,
+                    dtype=tf.float32
+                )
+                gen_loss, disc_loss = wavegan_loss(generator, discriminator, batch, z)
+                iterator.set_description("\nGen loss: {}, Disc loss: {}".format(gen_loss, disc_loss))
 
-            z = tf.random.uniform(
-                shape=[hyperparams['batch_size'], hyperparams['latent_dim']],
-                minval=-1.,
-                maxval=1.,
-                dtype=tf.float32
-            )
-            gen_loss, disc_loss = wavegan_loss(generator, discriminator, batch, z)
-            iterator.set_description("\nGen loss: {}, Disc loss: {}".format(gen_loss, disc_loss))
-
-            with train_summary_writer.as_default():
-                tf.summary.scalar('gen_loss', gen_loss, step=update_step)
-                tf.summary.scalar('disc_loss', disc_loss, step=update_step)
-            update_step += 1
+                # Write to tensorboard
+                with train_summary_writer.as_default():
+                    tf.summary.scalar('gen_loss', gen_loss, step=update_step)
+                    tf.summary.scalar('disc_loss', disc_loss, step=update_step)
+                update_step += 1
 
             offset += hyperparams['batch_size']
 
         if shuffle:
             dataset = tf.random.shuffle(dataset)
+        generator.save_weights(hyperparams['weights_folder'] + "generator/")
+        discriminator.save_weights(hyperparams['weights_folder'] + "discriminator/")
+
+        z = tf.random.uniform(
+            shape=[hyperparams['batch_size'], hyperparams['latent_dim']],
+            minval=-1.,
+            maxval=1.,
+            dtype=tf.float32
+        )
+        generate_sample(generator(z), hyperparams['generated_audio_output_dir'], epoch)
+
         print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
+
+
+def generate_sample(generated_audio, output_dir, epoch):
+    sample_dir = os.path.join(output_dir, str(epoch))
+    if not os.path.exists(sample_dir):
+        os.makedirs(sample_dir)
+    for i in range(generated_audio.shape[0]):
+        output_path = os.path.join(sample_dir, "{}_{}.wav".format(epoch, i + 1))
+        string = tf.audio.encode_wav(generated_audio[i], hyperparams['sample_rate'])
+        tf.io.write_file(output_path, string)
+
 
 
 hyperparams = {
@@ -102,6 +126,10 @@ hyperparams = {
     'adam_alpha': 1e-4,
     'adam_beta1': 0.5,
     'adam_beta2': 0.9,
+    'update_losses': 100,
+    'weights_folder': 'weights_folder/',
+    'sample_rate': 16000,
+    'generated_audio_output_dir': "generated_audio"
 }
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -119,8 +147,13 @@ generator = wavegan_generator(hyperparams['model_dim'], hyperparams['num_channel
 discriminator = wavegan_discriminator(hyperparams['model_dim'], hyperparams['num_channels'])
 generator.summary()
 discriminator.summary()
-#tf.keras.utils.plot_model(discriminator, to_file="disc.png")
-#tf.keras.utils.plot_model(generator, to_file="gen.png")
+#generator.load_weights(hyperparams['weights_folder'] + "generator/")
+#discriminator.load_weights(hyperparams['weights_folder'] + "discriminator/")
+#generator.save_weights(hyperparams['weights_folder'] + "generator/")
+#discriminator.save_weights(hyperparams['weights_folder'] + "discriminator/")
+
+generate_sample(generator(z), "generated_audio", 0)
+
 
 x = np.load(hyperparams['dataset'])
 
@@ -138,6 +171,7 @@ discriminator_optimizer = tf.keras.optimizers.Adam(
     beta_2=hyperparams['adam_beta2']
 )
 
-train(x, 5)
+start_at = 0
+train(x, 35, initial_step=start_at)
 
 
