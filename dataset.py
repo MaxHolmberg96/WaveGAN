@@ -14,7 +14,6 @@ def load_data(dataset_folder, window_length=16384):
         raw_audio = tf.io.read_file(str(path))
         audio_sample = tf.audio.decode_wav(raw_audio, desired_samples=window_length)
         wav = audio_sample[0]# [1] contains sample freq
-        print(np.max(wav), np.min(wav))
         x.append(tf.expand_dims(wav, 0))
     return tf.concat(x, axis=0)
 
