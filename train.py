@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import os
 #tf.random.set_seed(0)
-tf.config.experimental.set_visible_devices([], 'GPU')
+#tf.config.experimental.set_visible_devices([], 'GPU')
 @tf.function
 def train_step_disc(x):
     z = tf.random.uniform(
@@ -56,10 +56,11 @@ def wavegan_loss(gen, disc, x, z):
     return gen_loss, disc_loss + gp
 
 
-def train(dataset, epochs, shuffle=False, initial_step=0):
+def train(dataset, epochs, shuffle=False, initial_log_step=0):
     import time
     from tqdm import tqdm
-    update_step = initial_step
+    update_step = 0
+    update_log_step = initial_log_step
     for epoch in range(epochs):
         start = time.time()
         offset = 0
@@ -69,7 +70,7 @@ def train(dataset, epochs, shuffle=False, initial_step=0):
             if i % hyperparams['d_per_g_update'] == 0:
                 train_step_gen(batch)
             train_step_disc(batch)
-            if i % hyperparams['update_losses'] == 0:
+            if update_step % hyperparams['update_losses'] == 0:
                 z = tf.random.uniform(
                     shape=[hyperparams['batch_size'], hyperparams['latent_dim']],
                     minval=-1.,
@@ -81,11 +82,12 @@ def train(dataset, epochs, shuffle=False, initial_step=0):
 
                 # Write to tensorboard
                 with train_summary_writer.as_default():
-                    tf.summary.scalar('gen_loss', gen_loss, step=update_step)
-                    tf.summary.scalar('disc_loss', disc_loss, step=update_step)
-                update_step += 1
+                    tf.summary.scalar('gen_loss', gen_loss, step=update_log_step)
+                    tf.summary.scalar('disc_loss', disc_loss, step=update_log_step)
+                update_log_step += 1
 
             offset += hyperparams['batch_size']
+            update_step += 1
 
         if shuffle:
             dataset = tf.random.shuffle(dataset)
@@ -126,7 +128,7 @@ hyperparams = {
     'adam_alpha': 1e-4,
     'adam_beta1': 0.5,
     'adam_beta2': 0.9,
-    'update_losses': 100,
+    'update_losses': 10,
     'weights_folder': 'weights_folder/',
     'sample_rate': 16000,
     'generated_audio_output_dir': "generated_audio"
@@ -171,7 +173,6 @@ discriminator_optimizer = tf.keras.optimizers.Adam(
     beta_2=hyperparams['adam_beta2']
 )
 
-start_at = 0
-train(x, 35, initial_step=start_at)
+train(x, 100, initial_log_step=0)
 
 
