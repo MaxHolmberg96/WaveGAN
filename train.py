@@ -2,8 +2,27 @@ from wavegan import *
 import numpy as np
 import datetime
 import os
-#tf.random.set_seed(0)
+import argparse
+
 #tf.config.experimental.set_visible_devices([], 'GPU')
+hyperparams = {
+    'num_channels': 1,
+    'batch_size': 64,
+    'model_dim': 64,
+    'latent_dim': 100,
+    'phase_shuffle': 2,
+    'wgan_gp_lambda': 10,
+    'd_per_g_update': 5,
+    'adam_alpha': 1e-4,
+    'adam_beta1': 0.5,
+    'adam_beta2': 0.9,
+    'update_losses': 10,
+    'weights_folder': 'weights_folder/',
+    'sample_rate': 16000,
+    'generated_audio_output_dir': "generated_audio"
+}
+
+
 @tf.function
 def train_step_disc(x):
     z = tf.random.uniform(
@@ -115,49 +134,33 @@ def generate_sample(generated_audio, output_dir, epoch):
         tf.io.write_file(output_path, string)
 
 
+def generate_50000_samples():
+    c = 0
+    from tqdm import tqdm
+    for i in tqdm(range(5000)):
+        z = tf.random.uniform(shape=[10, hyperparams['latent_dim']], minval=-1., maxval=1., dtype=tf.float32)
+        generated_audio = generator(z)
+        for j in range(10):
+            string = tf.audio.encode_wav(generated_audio[j], hyperparams['sample_rate'])
+            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "50000_samples", "{}.wav".format(c)), string)
+            c += 1
 
-hyperparams = {
-    'dataset': 'sc09.npy',
-    'num_channels': 1,
-    'batch_size': 64,
-    'model_dim': 64,
-    'latent_dim': 100,
-    'phase_shuffle': 2,
-    'wgan_gp_lambda': 10,
-    'd_per_g_update': 5,
-    'adam_alpha': 1e-4,
-    'adam_beta1': 0.5,
-    'adam_beta2': 0.9,
-    'update_losses': 10,
-    'weights_folder': 'weights_folder/',
-    'sample_rate': 16000,
-    'generated_audio_output_dir': "generated_audio"
-}
+
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-generate_50000", "--generate_50000", required=False, help="If we want to generate 50000 audio samples")
+ap.add_argument("-train", "--train", required=False, help="If we want to train")
+ap.add_argument("-epochs", "--epochs", required=True, type=int, help="The number of epochs to train for")
+ap.add_argument("-dataset", "--dataset", required=True, help="The path to the dataset file (.npy)")
+ap.add_argument("-initial_log_step", "--initial_log_step", required=False, type=int, help="The step at where we should start logging")
+args = vars(ap.parse_args())
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
 train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
-
-z = tf.random.uniform(
-    shape=[hyperparams['batch_size'], hyperparams['latent_dim']],
-    minval=-1.,
-    maxval=1.,
-    dtype=tf.float32
-)
 generator = wavegan_generator(hyperparams['model_dim'], hyperparams['num_channels'])
 discriminator = wavegan_discriminator(hyperparams['model_dim'], hyperparams['num_channels'])
-generator.summary()
-discriminator.summary()
-#generator.load_weights(hyperparams['weights_folder'] + "generator/")
-#discriminator.load_weights(hyperparams['weights_folder'] + "discriminator/")
-#generator.save_weights(hyperparams['weights_folder'] + "generator/")
-#discriminator.save_weights(hyperparams['weights_folder'] + "discriminator/")
-
-generate_sample(generator(z), "generated_audio", 0)
-
-
-x = np.load(hyperparams['dataset'])
 
 """
 Define optimizers
@@ -172,7 +175,15 @@ discriminator_optimizer = tf.keras.optimizers.Adam(
     beta_1=hyperparams['adam_beta1'],
     beta_2=hyperparams['adam_beta2']
 )
+if args['train'] is not None:
+    initial_log_step = 0
+    if args['continue'] is not None:
+        generator.load_weights(hyperparams['weights_folder'] + "generator/")
+        discriminator.load_weights(hyperparams['weights_folder'] + "discriminator/")
+    if args['initial_log_step'] is not None:
+        initial_log_step = args['initial_log_step']
+    x = np.load(args['dataset'])
+    train(x, args['epochs'], initial_log_step=initial_log_step)
 
-train(x, 100, initial_log_step=0)
-
-
+elif args['generate'] is not None:
+    generate_50000_samples()
