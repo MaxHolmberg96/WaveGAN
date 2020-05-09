@@ -1,4 +1,5 @@
 import tensorflow as tf
+import pickle
 
 
 def add_Conv1DTranpose(model, filters, kernel_size, strides, kernel_initializer):
@@ -23,7 +24,7 @@ def add_Conv1DTranpose(model, filters, kernel_size, strides, kernel_initializer)
 def wavegan_generator(d, c):
     strides = (1, 4)
     k_size = (1, 25)
-    initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.02)
+    initializer = None#tf.keras.initializers.RandomNormal(mean=0, stddev=0.02)
 
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Input(100))
@@ -62,7 +63,7 @@ def wavegan_discriminator(d, c):
     alpha = 0.2
     stride = 4
     k_size = 25
-    initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.02)
+    initializer = None#tf.keras.initializers.RandomNormal(mean=0, stddev=0.02)
 
 
     model = tf.keras.Sequential()
@@ -116,3 +117,29 @@ def wavegan_discriminator(d, c):
 
     model.build()
     return model
+
+
+def save_model(generator, discriminator, gen_opt, disc_opt, hyperparams):
+    generator.save_weights(hyperparams['weights_folder'] + "generator/")
+    discriminator.save_weights(hyperparams['weights_folder'] + "discriminator/")
+
+    config = gen_opt.get_config()
+    with open(hyperparams['weights_folder'] + "optimizer/gen_opt.pkl", "wb") as f:
+        pickle.dump(config, f)
+
+    config = disc_opt.get_config()
+    with open(hyperparams['weights_folder'] + "optimizer/disc_opt.pkl", "wb") as f:
+        pickle.dump(config, f)
+
+
+def load_model(generator, discriminator, gen_opt, disc_opt, hyperparams):
+    generator.load_weights(hyperparams['weights_folder'] + "generator/")
+    discriminator.load_weights(hyperparams['weights_folder'] + "discriminator/")
+
+    with open(hyperparams['weights_folder'] + "optimizer/gen_opt.pkl", "rb") as f:
+        config = pickle.load(f)
+    gen_opt.from_config(config)
+
+    with open(hyperparams['weights_folder'] + "optimizer/disc_opt.pkl", "rb") as f:
+        config = pickle.load(f)
+    disc_opt.from_config(config)

@@ -61,18 +61,18 @@ def create_piano_npy(wav_file, stride=16384//2, window_length=16384):
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-create_piano_wav", "--create_piano_wav", required=False, help="Generates a wav file with the concatenation of all piano files in train")
-ap.add_argument("-create_piano_npy", "--create_piano_npy", required=False, help="Generates a npy with windows of piano sounds of window length 16384")
-ap.add_argument("-create_sc09_npy", "--create_sc09_npy", required=False, help="Generates a npy file with all the 1 second spoken utterances from sc09")
+ap.add_argument("-create_piano_wav", "--create_piano_wav", required=False, action="store_true", help="Generates a wav file with the concatenation of all piano files in train")
+ap.add_argument("-create_piano_npy", "--create_piano_npy", required=False, action="store_true", help="Generates a npy with windows of piano sounds of window length 16384")
+ap.add_argument("-create_sc09_npy", "--create_sc09_npy", required=False, action="store_true", help="Generates a npy file with all the 1 second spoken utterances from sc09")
 args = vars(ap.parse_args())
 
-if args['create_piano_wav'] is not None:
+if args['create_piano_wav']:
     piano = concat_piano("dataset/piano/train")
     string = tf.audio.encode_wav(tf.expand_dims(piano, 1), 16000)
     tf.io.write_file("pianoooo.wav", string)
-elif args['create_piano_npy'] is not None:
-    np.save("piano.npy", create_piano_npy("pianoooo.wav", 16384 // 8))
-elif args['create_sc09_npy'] is not None:
+elif args['create_piano_npy']:
+    np.save("piano.npy", create_piano_npy("pianoooo.wav", 16384 // 16))
+elif args['create_sc09_npy']:
     np.save("sc09.npy", load_data("dataset/sc09-spoken-numbers/sc09/train"))
 else:
     print("Please give an argument: -create_piano_wav, -create_piano_npy or -create_sc09_npy")
