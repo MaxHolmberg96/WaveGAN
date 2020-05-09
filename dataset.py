@@ -64,15 +64,17 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-create_piano_wav", "--create_piano_wav", required=False, action="store_true", help="Generates a wav file with the concatenation of all piano files in train")
 ap.add_argument("-create_piano_npy", "--create_piano_npy", required=False, action="store_true", help="Generates a npy with windows of piano sounds of window length 16384")
 ap.add_argument("-create_sc09_npy", "--create_sc09_npy", required=False, action="store_true", help="Generates a npy file with all the 1 second spoken utterances from sc09")
+ap.add_argument("-path", "--path", required=True, help="Path to the folder")
+ap.add_argument("-output_path", "--output_path", required=True, help="Where to store the output.")
 args = vars(ap.parse_args())
 
 if args['create_piano_wav']:
-    piano = concat_piano("dataset/piano/train")
+    piano = concat_piano(args['path'])
     string = tf.audio.encode_wav(tf.expand_dims(piano, 1), 16000)
-    tf.io.write_file("pianoooo.wav", string)
+    tf.io.write_file(args['output_path'], string)
 elif args['create_piano_npy']:
-    np.save("piano.npy", create_piano_npy("pianoooo.wav", 16384 // 16))
+    np.save(args['output_path'], create_piano_npy(args["path"], 16384 // 16))
 elif args['create_sc09_npy']:
-    np.save("sc09.npy", load_data("dataset/sc09-spoken-numbers/sc09/train"))
+    np.save(args['output_path'], load_data(args['output_path']))
 else:
     print("Please give an argument: -create_piano_wav, -create_piano_npy or -create_sc09_npy")
