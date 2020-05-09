@@ -7,8 +7,8 @@ import argparse
 #tf.config.experimental.set_visible_devices([], 'GPU')
 hyperparams = {
     'num_channels': 1,
-    'batch_size': 12,
-    'model_dim': 32,
+    'batch_size': 64,
+    'model_dim': 64,
     'latent_dim': 100,
     'phase_shuffle': 2,
     'wgan_gp_lambda': 10,
