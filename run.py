@@ -81,6 +81,9 @@ def train(dataset, epochs, shuffle=True, initial_log_step=0):
     import time
     from tqdm import tqdm
 
+    if shuffle:
+        np.random.shuffle(dataset)
+
     update_step = 0
     update_log_step = initial_log_step
     for epoch in range(epochs):
@@ -112,8 +115,6 @@ def train(dataset, epochs, shuffle=True, initial_log_step=0):
             offset += hyperparams['batch_size']
             update_step += 1
 
-        if shuffle:
-            dataset = tf.random.shuffle(dataset)
         save_model(generator, discriminator, generator_optimizer, discriminator_optimizer, hyperparams)
 
         write_summaries(grad_gen, grad_disc, hyperparams['generated_audio_output_dir'], epoch)
