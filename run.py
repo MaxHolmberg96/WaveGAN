@@ -17,7 +17,7 @@ hyperparams = {
     'adam_beta1': 0.5,
     'adam_beta2': 0.9,
     'update_losses': 10,
-    'weights_folder': 'weights_folder/',
+    'weights_folder': 'weights_folder_piano/',
     'sample_rate': 16000,
     'generated_audio_output_dir': "generated_audio"
 }
@@ -80,13 +80,11 @@ def wavegan_loss(gen, disc, x, z):
 def train(dataset, epochs, shuffle=True, initial_log_step=0):
     import time
     from tqdm import tqdm
-
-    if shuffle:
-        np.random.shuffle(dataset)
-
     update_step = 0
     update_log_step = initial_log_step
     for epoch in range(epochs):
+        if shuffle:
+            np.random.shuffle(dataset)
         start = time.time()
         offset = 0
         iterator = tqdm(range((dataset.shape[0]-15000) // hyperparams['batch_size']))
@@ -159,21 +157,21 @@ def write_summaries(grad_gen, grad_disc, output_dir, epoch):
             tf.summary.histogram("disc_weights_layer_" + str(i), discriminator_weights[i], step=epoch)
 
 
-
-def generate_50000_samples():
+def generate_n_samples(n=50000):
+    assert n % 10 == 0
     c = 0
     from tqdm import tqdm
-    for i in tqdm(range(5000)):
+    for i in tqdm(range(n // 10)):
         z = tf.random.uniform(shape=[10, hyperparams['latent_dim']], minval=-1., maxval=1., dtype=tf.float32)
         generated_audio = generator(z)
         for j in range(10):
             string = tf.audio.encode_wav(generated_audio[j], hyperparams['sample_rate'])
-            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "50000_samples", "{}.wav".format(c)), string)
+            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "samples", "{}.wav".format(c)), string)
             c += 1
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-generate_50000", "--generate_50000", required=False, help="If we want to generate 50000 audio samples", action='store_true')
+ap.add_argument("-generate", "--generate", required=False, help="If we want to generate n audio samples", action='store_true')
 ap.add_argument("-train", "--train", required=False, help="If we want to train", action='store_true')
 ap.add_argument("-continue", "--continue", required=False, help="If we want to load the old weights", action='store_true')
 ap.add_argument("-epochs", "--epochs", required=True, type=int, help="The number of epochs to train for")
@@ -213,4 +211,5 @@ if args['train']:
     train(x, args['epochs'], initial_log_step=initial_log_step)
 
 elif args['generate']:
-    generate_50000_samples()
+    load_model(generator, discriminator, generator_optimizer, discriminator_optimizer, hyperparams)
+    generate_n_samples(n=1000)
