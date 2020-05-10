@@ -3,7 +3,7 @@ Implementation of the paper https://arxiv.org/pdf/1802.04208.pdf
 
 
 
-Example of piano generated with this WaveGAN implementation: [piano](https://soundcloud.com/max-holmberg-2/generated-piano-with-wavegan/s-e8zHof7Ejbs) which was trained for ~100k update steps.
+Example of piano sounds (several 1 second sound files stitched togheter) generated with this WaveGAN implementation: [piano](https://soundcloud.com/max-holmberg-2/generated-piano-with-wavegan/s-e8zHof7Ejbs) which was trained for ~100k update steps.
 
 
 
