@@ -1,7 +1,7 @@
 # WaveGAN
 Implementation of the paper https://arxiv.org/pdf/1802.04208.pdf
 
-Example of piano generated with this WaveGAN implementation: [piano]https://soundcloud.com/max-holmberg-2/generated-piano-with-wavegan/s-e8zHof7Ejbs
+Example of piano generated with this WaveGAN implementation: [piano](https://soundcloud.com/max-holmberg-2/generated-piano-with-wavegan/s-e8zHof7Ejbs)
 
 
 In order to generate the dataset files required for training run
