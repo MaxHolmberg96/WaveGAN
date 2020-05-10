@@ -2,6 +2,12 @@
 Implementation of the paper https://arxiv.org/pdf/1802.04208.pdf
 
 
+
+Example of piano generated with this WaveGAN implementation: [piano](https://soundcloud.com/max-holmberg-2/generated-piano-with-wavegan/s-e8zHof7Ejbs) which was trained for ~100k update steps.
+
+
+
+
 In order to generate the dataset files required for training run
 ```
 python dataset.py -create_piano_wav -path "dataset/piano/train" -output_path "piano.wav"
