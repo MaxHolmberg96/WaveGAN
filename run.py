@@ -87,7 +87,7 @@ def train(dataset, epochs, shuffle=True, initial_log_step=0):
             np.random.shuffle(dataset)
         start = time.time()
         offset = 0
-        iterator = tqdm(range((dataset.shape[0]-15000) // hyperparams['batch_size']))
+        iterator = tqdm(range(dataset.shape[0] // hyperparams['batch_size']))
         for i in iterator:
             batch = dataset[offset:offset + hyperparams['batch_size']]
             if i % hyperparams['d_per_g_update'] == 0:
