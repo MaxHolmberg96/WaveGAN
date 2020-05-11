@@ -29,3 +29,8 @@ To continue the training and specify which logging step it should start from in 
 ```
 python run.py -train -continue -initial_log_step 5 -dataset piano.npy -epochs 100
 ```
+
+To generate samples with weights, run
+```
+python run.py -generate -weights piano -n 1000 -output_path "..."
+```
