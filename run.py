@@ -166,7 +166,7 @@ def generate_n_samples(n=50000):
         generated_audio = generator(z)
         for j in range(10):
             string = tf.audio.encode_wav(generated_audio[j], hyperparams['sample_rate'])
-            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "samples", "{}.wav".format(c)), string)
+            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "samples_sc09", "{}.wav".format(c)), string)
             c += 1
 
 
@@ -222,4 +222,4 @@ if args['train']:
 
 elif args['generate']:
     load_model(generator, discriminator, generator_optimizer, discriminator_optimizer, hyperparams)
-    generate_n_samples(n=1000)
+    generate_n_samples(n=50000)

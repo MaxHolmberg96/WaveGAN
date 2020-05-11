@@ -48,7 +48,7 @@ def piano_generator(wav_file, batch_size, window_length=16384):
         yield tf.concat(x, axis=0)
 
 
-def create_piano_npy(wav_file, stride=16384//2, window_length=16384):
+def create_npy_from_wav(wav_file, stride=16384//2, window_length=16384):
     raw_audio = tf.io.read_file(wav_file)
     audio_sample = tf.audio.decode_wav(raw_audio)[0]
     audio_length = audio_sample.shape[0]
@@ -63,6 +63,7 @@ def create_piano_npy(wav_file, stride=16384//2, window_length=16384):
 ap = argparse.ArgumentParser()
 ap.add_argument("-create_piano_wav", "--create_piano_wav", required=False, action="store_true", help="Generates a wav file with the concatenation of all piano files in train")
 ap.add_argument("-create_piano_npy", "--create_piano_npy", required=False, action="store_true", help="Generates a npy with windows of piano sounds of window length 16384")
+ap.add_argument("-create_cat_npy", "--create_cat_npy", required=False, action="store_true", help="Generates a npy with windows of piano sounds of window length 16384")
 ap.add_argument("-create_sc09_npy", "--create_sc09_npy", required=False, action="store_true", help="Generates a npy file with all the 1 second spoken utterances from sc09")
 ap.add_argument("-path", "--path", required=True, help="Path to the folder")
 ap.add_argument("-output_path", "--output_path", required=True, help="Where to store the output.")
@@ -73,7 +74,9 @@ if args['create_piano_wav']:
     string = tf.audio.encode_wav(tf.expand_dims(piano, 1), 16000)
     tf.io.write_file(args['output_path'], string)
 elif args['create_piano_npy']:
-    np.save(args['output_path'], create_piano_npy(args["path"], 16384 // 16))
+    np.save(args['output_path'], create_npy_from_wav(args["path"], 16384 // 16))
+elif args['create_cat_npy']:
+    np.save(args['output_path'], create_npy_from_wav(args["path"], 16384 // 16))
 elif args['create_sc09_npy']:
     np.save(args['output_path'], load_data(args['output_path']))
 else:
