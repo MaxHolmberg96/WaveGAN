@@ -157,7 +157,7 @@ def write_summaries(grad_gen, grad_disc, output_dir, epoch):
             tf.summary.histogram("disc_weights_layer_" + str(i), discriminator_weights[i], step=epoch)
 
 
-def generate_n_samples(n=50000):
+def generate_n_samples(output_path, n=50000):
     assert n % 10 == 0
     c = 0
     from tqdm import tqdm
@@ -166,16 +166,18 @@ def generate_n_samples(n=50000):
         generated_audio = generator(z)
         for j in range(10):
             string = tf.audio.encode_wav(generated_audio[j], hyperparams['sample_rate'])
-            tf.io.write_file(os.path.join(hyperparams['generated_audio_output_dir'], "samples", "{}.wav".format(c)), string)
+            tf.io.write_file(os.path.join(output_path, "{}.wav".format(c)), string)
             c += 1
 
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-generate", "--generate", required=False, help="If we want to generate n audio samples", action='store_true')
+ap.add_argument("-n", "--n", required=False, default=100, help="Number of samples to generate")
+ap.add_argument("-output_path", "--output_path", required=False, help="Output path of the generated samples")
 ap.add_argument("-train", "--train", required=False, help="If we want to train", action='store_true')
 ap.add_argument("-continue", "--continue", required=False, help="If we want to load the old weights", action='store_true')
-ap.add_argument("-epochs", "--epochs", required=True, type=int, help="The number of epochs to train for")
-ap.add_argument("-dataset", "--dataset", required=True, help="The path to the dataset file (.npy)")
+ap.add_argument("-epochs", "--epochs", required=False, default=100, type=int, help="The number of epochs to train for")
+ap.add_argument("-dataset", "--dataset", required=False, help="The path to the dataset file (.npy)")
 ap.add_argument("-initial_log_step", "--initial_log_step", required=False, type=int, help="The step at where we should start logging")
 ap.add_argument("-weights", "--weights", required=False, help="The pretrained weights for the different datasets (sc09, piano or cats).")
 args = vars(ap.parse_args())
@@ -222,4 +224,5 @@ if args['train']:
 
 elif args['generate']:
     load_model(generator, discriminator, generator_optimizer, discriminator_optimizer, hyperparams)
-    generate_n_samples(n=1000)
+    if args['output_path'] is not None:
+        generate_n_samples(args['output_path'], n=args['n'])
