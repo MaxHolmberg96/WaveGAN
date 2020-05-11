@@ -17,7 +17,7 @@ hyperparams = {
     'adam_beta1': 0.5,
     'adam_beta2': 0.9,
     'update_losses': 10,
-    'weights_folder': 'weights_folder_piano/',
+    'weights_folder': 'weights_folder/',
     'sample_rate': 16000,
     'generated_audio_output_dir': "generated_audio"
 }
@@ -177,6 +177,7 @@ ap.add_argument("-continue", "--continue", required=False, help="If we want to l
 ap.add_argument("-epochs", "--epochs", required=True, type=int, help="The number of epochs to train for")
 ap.add_argument("-dataset", "--dataset", required=True, help="The path to the dataset file (.npy)")
 ap.add_argument("-initial_log_step", "--initial_log_step", required=False, type=int, help="The step at where we should start logging")
+ap.add_argument("-weights", "--weights", required=False, help="The pretrained weights for the different datasets (sc09, piano or cats).")
 args = vars(ap.parse_args())
 
 current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -200,6 +201,15 @@ discriminator_optimizer = tf.keras.optimizers.Adam(
     beta_2=hyperparams['adam_beta2']
 )
 
+if args['weights']:
+    if args['weights'] == 'sc09':
+        hyperparams['weights_folder'] = 'weights_folder_sc09/'
+    elif args['weights'] == 'piano':
+        hyperparams['weights_folder'] = 'weights_folder_piano/'
+    elif args['weights'] == 'cats':
+        pass  # Not done training
+    else:
+        print('No pretrained weights for the selected dataset. Initializing new weights.')
 
 if args['train']:
     initial_log_step = 0
