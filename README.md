@@ -43,7 +43,7 @@ To generate samples with weights, run
 python run.py -generate -weights piano -n 1000 -output_path "..."
 ```
 
-## Spectrogram
+## Spectrogram (9 random samples)
 True (Kittens)             |  Generated (Kittens)
 :-------------------------:|:-------------------------:
 ![](spectrogram/kittens_random_spectrogram.png)   |  ![](spectrogram/kittens_gen_random_spectrogram.png)
