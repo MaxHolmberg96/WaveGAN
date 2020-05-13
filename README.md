@@ -46,4 +46,4 @@ python run.py -generate -weights piano -n 1000 -output_path "..."
 
 True (Kittens)             |  Generated (Kittens)
 :-------------------------:|:-------------------------:
-![](spectrogram/kittens_random_spectrogram.png)   |  ![](kittens_gen_random_spectrogram.png)
+![](spectrogram/kittens_random_spectrogram.png)   |  ![](spectrogram/kittens_gen_random_spectrogram.png)
