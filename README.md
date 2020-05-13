@@ -44,14 +44,14 @@ python run.py -generate -weights piano -n 1000 -output_path "..."
 ```
 
 ## Spectrogram (9 random samples)
-True (Kittens)             |  WaveGAN (Kittens)
+Real (Kittens)             |  WaveGAN (Kittens)
 :-------------------------:|:-------------------------:
 ![](spectrogram/kittens_random_spectrogram.png)   |  ![](spectrogram/kittens_gen_random_spectrogram.png)
 
-True (Piano)             |  WaveGAN (Piano)
+Real (Piano)             |  WaveGAN (Piano)
 :-------------------------:|:-------------------------:
 ![](spectrogram/piano_random_spectrogram.png)   |  ![](spectrogram/piano_gen_random_spectrogram.png)
 
-True (sc09)             |  WaveGAN (sc09)
+Real (sc09)             |  WaveGAN (sc09)
 :-------------------------:|:-------------------------:
 ![](spectrogram/sc09_random_spectrogram.png)   |  ![](spectrogram/sc09_gen_random_spectrogram.png)
