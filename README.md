@@ -7,6 +7,8 @@ Implementation of the paper https://arxiv.org/pdf/1802.04208.pdf
 
 [SC09 (0-9 digits) which was trained for ~320k update steps.](https://soundcloud.com/max-holmberg-2/sets/sc09-wavegan)
 
+[Kitten meows which was trained for ~100k update steps.](https://soundcloud.com/max-holmberg-2/sets/kittens-wavegan)
+
 Dependencies
 ```
 tensorflow=2.1.0
